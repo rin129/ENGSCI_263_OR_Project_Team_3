@@ -27,7 +27,8 @@ for i in range(len(stores)):
     time = distribution_time[i] + 7.5
     routes[i][j] = stores[i]
     # demand += demands[i]
-    while (time < time_threshold | demand < demand_threshold):
+    j += 1
+    while (time < time_threshold & demand < demand_threshold):
         smallest = duration_store[0]
         for k in range(len(duration_store)):
             if (duration_store[k] < smallest):
@@ -35,6 +36,8 @@ for i in range(len(stores)):
                 next_store = k
         demand += demands[i]
         time += stores[next_store] + 7.5 + distribution_time[next_store]
-        if (time < time_threshold):
+        if (time < time_threshold & demand < demand_threshold):
             time -= distribution_time[next_store]
+            routes[i][j] = stores[next_store]
+            j += 1
 

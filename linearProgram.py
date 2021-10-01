@@ -11,7 +11,7 @@ from routeGeneration import *
 
 max_routes = 60
 
-possible_routes = [i for i in range(0,650)]
+possible_routes = [i for i in range(0,len(routes))]
 
 x = LpVariable.dicts("Route", possible_routes, 0, None, LpBinary)
 
@@ -34,27 +34,3 @@ for v in prob.variables():
     if v.varValue == 1:
         print(v.name, "=", v.varValue)
 
-print(routes[0])
-print(routes[11])
-print(routes[111])
-print(routes[176])
-print(routes[185])
-print(routes[194])
-print(routes[20])
-print(routes[202])
-print(routes[256])
-print(routes[270])
-print(routes[290])
-print(routes[31])
-print(routes[310])
-print(routes[326])
-print(routes[336])
-print(routes[361])
-print(routes[382])
-print(routes[390])
-print(routes[403])
-print(routes[411])
-print(routes[522])
-print(routes[591])
-print(routes[601])
-print(routes[83])

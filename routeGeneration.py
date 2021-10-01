@@ -4,6 +4,7 @@
 
 # create a list of nodes/stores at a region
 
+import math
 import numpy as np
 
 stores = np.genfromtxt('WoolworthsTravelDurations.csv', dtype = str, delimiter = ',', skip_footer = 66)
@@ -30,7 +31,7 @@ demand = 0
 for i in range(len(stores)):
     smallest_visited = []
     smallest_visited.append(i)
-    for ii in range(10):
+    for ii in range(20):
         next_store = 0
         time = 0
         demand = 0
@@ -38,7 +39,7 @@ for i in range(len(stores)):
         nodes_list = []
 
         duration_store = travel_durations[i]
-        time = distribution_time[i] + (7.5*60)
+        time = distribution_time[i] + (7.5*60*weekdayDemands[i]) 
         route_list.append(stores[i])
         nodes_list.append(i)
         demand += weekdayDemands[i]
@@ -67,7 +68,7 @@ for i in range(len(stores)):
         nodes_list.append(next_store)
         smallest_visited.append(next_store)
         demand += weekdayDemands[next_store]
-        time += duration_store[next_store] + (7.5*60) + distribution_time[next_store]
+        time += duration_store[next_store] + (7.5*60*weekdayDemands[next_store]) + distribution_time[next_store]
 
         if ((time < time_threshold) & (demand <= demand_threshold)):
             time -= distribution_time[next_store]
@@ -75,7 +76,7 @@ for i in range(len(stores)):
             duration_store = travel_durations[next_store]
             
         else: 
-            time -= duration_store[next_store] + (7.5*60) + distribution_time[next_store] - back_home
+            time -= duration_store[next_store] + (7.5*60*weekdayDemands[next_store]) + distribution_time[next_store] - back_home
 
         while ((time < time_threshold) & (demand <= demand_threshold)):
 
@@ -92,7 +93,7 @@ for i in range(len(stores)):
                     next_store = k
 
             demand += weekdayDemands[next_store]
-            time += duration_store[next_store] + (7.5*60) + distribution_time[next_store]
+            time += duration_store[next_store] + (7.5*60*weekdayDemands[next_store]) + distribution_time[next_store]
             nodes_list.append(next_store)
 
             if ((time < time_threshold) & (demand <= demand_threshold)):
@@ -101,15 +102,14 @@ for i in range(len(stores)):
                 route_list.append(stores[next_store])
                 duration_store = travel_durations[next_store]
             else: 
-                time -= duration_store[next_store] + (7.5*60) + distribution_time[next_store]
+                time -= duration_store[next_store] + (7.5*60*weekdayDemands[next_store]) + distribution_time[next_store]
                 time += back_home
                 back_home = 0
 
+        time = time/(60*60)
+        time = (math.ceil(time*4))/4
         routes.append(route_list)
-        hours.append(time/(60*60))
+        hours.append(time)
 
 time = 0
-print(hours)
-
-
 

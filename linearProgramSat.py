@@ -11,6 +11,8 @@ from routeGenerationSat import *
 
 max_routes = 60
 
+# stores variable is an array with the names of all stores
+# delete removes the names of stores that have zero demands so they are not variables in the LP
 stores = np.delete(stores, zero_demand, 0)
 
 possible_routes = [i for i in range(0,len(routes))]

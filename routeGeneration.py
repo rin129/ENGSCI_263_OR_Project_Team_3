@@ -1,17 +1,27 @@
-# returns a list of a list, or a data frame of the 60 different trips for a schedule.
+# ENGSCI 263 
+# OR project, Team 03
 
-# route generation by an algortihm
-
-# create a list of nodes/stores at a region
+# This python script generates a list of feasible routes given average weekday deamnds 
+# Using this python script routes are generated and the time taken for each route
+# Routes are stored in a list with each index contating a route, each route being a list itself
+# Time is stored in an array and each value is rounded up to the nearest quarter
 
 import math
 import numpy as np
+
+# store variable is just an array with each index being the name of each store
+# 55th index deleted as this is the distribution centre and is not required
 
 stores = np.genfromtxt('WoolworthsTravelDurations.csv', dtype = str, delimiter = ',', skip_footer = 66)
 stores = stores[1:67]
 stores = np.delete(stores, 55, 0)
 
+# weekdayDeamnds variable is an array to store the average weekday demands of each store
+
 weekdayDemands = np.genfromtxt('WeekdayDemands.csv', delimiter = ',', skip_header = 1, usecols = 2)
+
+# travel_durations array is the 2d array for the time taken to travel between stores 
+# distribution_time array is an array for the time taken to travel from the distribution centre to all the stores
 
 travel_durations = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 1, usecols = list(range(1,67)))
 distribution_time = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 56, skip_footer = 10, usecols = list(range(1,67)))

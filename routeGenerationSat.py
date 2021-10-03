@@ -6,7 +6,7 @@ stores = np.genfromtxt('WoolworthsTravelDurations.csv', dtype = str, delimiter =
 stores = stores[1:67]
 stores = np.delete(stores, 55, 0)
 
-satDemands = np.genfromtxt('SaturdayDemands.csv', delimiter = ',', skip_header = 1, usecols = 2)
+satDemands = np.genfromtxt('SaturdayDemand.csv', delimiter = ',', skip_header = 1, usecols = 2)
 
 travel_durations = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 1, usecols = list(range(1,67)))
 distribution_time = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 56, skip_footer = 10, usecols = list(range(1,67)))
@@ -16,6 +16,12 @@ travel_durations = np.delete(travel_durations, 55, 1)
 
 time_threshold = 240*60
 demand_threshold = 26
+
+zero_demand = []
+
+for a in range(len(satDemands)):
+    if (satDemands[a] == 0):
+        zero_demand.append(a)
 
 routes = []
 hours = []
@@ -30,12 +36,18 @@ for i in range(len(stores)):
     
     for ii in range(10):
 
+        no_demand = i in zero_demand
+
+        if (no_demand == True):
+            break
+
         nodes_list = []
         next_visited = []
         next_store = 0
 
         visited = False
         thisSmallest = False
+        no_demand = False
 
         duration_store = travel_durations[i]
         nodes_list.append(i)
@@ -46,7 +58,8 @@ for i in range(len(stores)):
                 duration_store[l] = 0
 
         for j in range(len(duration_store)):
-            if (duration_store[j] != 0):
+            no_demand = j in zero_demand
+            if ((duration_store[j] != 0) & (no_demand == False)):
                 smallest = duration_store[j]
                 next_store = j
                 break
@@ -54,7 +67,8 @@ for i in range(len(stores)):
         for k in range(len(duration_store)):
             thisSmallest = k in smallest_visited
             visited = k in nodes_list
-            if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (thisSmallest == False) & (visited == False)):
+            no_demand = k in zero_demand
+            if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (thisSmallest == False) & (visited == False) & (no_demand == False)):
                 smallest = duration_store[k]
                 next_store = k
 
@@ -88,7 +102,8 @@ for i in range(len(stores)):
                     duration_store[l] = 0
 
             for j in range(len(duration_store)):
-                if (duration_store[j] != 0):
+                no_demand = j in zero_demand
+                if ((duration_store[j] != 0) & (no_demand == False)):
                     smallest = duration_store[j]
                     next_store_after = j
                     break
@@ -96,7 +111,8 @@ for i in range(len(stores)):
             for k in range(len(duration_store)):
                 nextSmallest = k in next_visited
                 visited = k in nodes_list
-                if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (nextSmallest == False) & (visited == False)):
+                no_demand = k in zero_demand
+                if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (nextSmallest == False) & (visited == False) & (no_demand == False)):
                     smallest = duration_store[k]
                     next_store_after = k
 
@@ -119,14 +135,16 @@ for i in range(len(stores)):
             while ((time < time_threshold) & (demand <= demand_threshold)):
 
                 for j in range(len(duration_store)):
-                    if (duration_store[j] != 0):
+                    no_demand = j in zero_demand
+                    if ((duration_store[j] != 0) & (no_demand == False)):
                         smallest = duration_store[j]
                         next_store_after = j
                         break
 
                 for k in range(len(duration_store)):
                     visited = k in nodes_list
-                    if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (visited == False)):
+                    no_demand = k in zero_demand
+                    if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (visited == False) & (no_demand == False)):
                         smallest = duration_store[k]
                         next_store_after = k
 

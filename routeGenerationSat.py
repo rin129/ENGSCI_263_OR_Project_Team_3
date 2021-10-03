@@ -1,3 +1,13 @@
+# ENGSCI 263 
+# OR project, Team 03
+
+# This python script generates a list of feasible routes given average saturday deamnds 
+# Using this python script routes are generated and the time taken for each route
+# Routes are stored in a list with each index contating a route, each route being a list itself
+# Time is stored in an array and each value is rounded up to the nearest quarter
+
+# The following script works exactly the same way as routeGeneration except the demands are based on saturday average demands
+# slight changes in code will be commented in this python script but to find general comments please view routeGeneration.py
 
 import math
 import numpy as np
@@ -5,6 +15,8 @@ import numpy as np
 stores = np.genfromtxt('WoolworthsTravelDurations.csv', dtype = str, delimiter = ',', skip_footer = 66)
 stores = stores[1:67]
 stores = np.delete(stores, 55, 0)
+
+# satDemands is an array for the average saturday demands
 
 satDemands = np.genfromtxt('SaturdayDemand.csv', delimiter = ',', skip_header = 1, usecols = 2)
 
@@ -17,7 +29,11 @@ travel_durations = np.delete(travel_durations, 55, 1)
 time_threshold = 240*60
 demand_threshold = 26
 
+# zero demand empty list stores the index positions of the stores with no demand on saturday
+
 zero_demand = []
+
+# loop through all stores to find which ones have zero demand, store them in the zero_demand array
 
 for a in range(len(satDemands)):
     if (satDemands[a] == 0):
@@ -35,6 +51,10 @@ for i in range(len(stores)):
     smallest_visited.append(i)
     
     for ii in range(10):
+
+        # this checks if the starting store has no demand
+        # if the store has no demand then break out of the route generation loop for that store as no routes can be generated
+        # the no_demand boolean variable prevents routes being generated that include stores with zero demand
 
         no_demand = i in zero_demand
 
@@ -57,12 +77,17 @@ for i in range(len(stores)):
             if (thisSmallest == True):
                 duration_store[l] = 0
 
+        # this for loop sets the smallest variable
+        # it will set smallest to a store with zero demand
+
         for j in range(len(duration_store)):
             no_demand = j in zero_demand
             if ((duration_store[j] != 0) & (no_demand == False)):
                 smallest = duration_store[j]
                 next_store = j
                 break
+        
+        # this for loop includes the no_demand boolean variable
 
         for k in range(len(duration_store)):
             thisSmallest = k in smallest_visited

@@ -1,8 +1,3 @@
-# returns a list of a list, or a data frame of the 60 different trips for a schedule.
-
-# route generation by an algortihm
-
-# create a list of nodes/stores at a region
 
 import math
 import numpy as np
@@ -11,7 +6,7 @@ stores = np.genfromtxt('WoolworthsTravelDurations.csv', dtype = str, delimiter =
 stores = stores[1:67]
 stores = np.delete(stores, 55, 0)
 
-weekdayDemands = np.genfromtxt('WeekdayDemands.csv', delimiter = ',', skip_header = 1, usecols = 2)
+satDemands = np.genfromtxt('SaturdayDemands.csv', delimiter = ',', skip_header = 1, usecols = 2)
 
 travel_durations = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 1, usecols = list(range(1,67)))
 distribution_time = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 56, skip_footer = 10, usecols = list(range(1,67)))
@@ -74,12 +69,12 @@ for i in range(len(stores)):
             route_list = []
             nodes_list = []
 
-            time = distribution_time[i] + (7.5*60*weekdayDemands[i]) + duration_store[next_store] + (7.5*60*weekdayDemands[next_store])
+            time = distribution_time[i] + (7.5*60*satDemands[i]) + duration_store[next_store] + (7.5*60*satDemands[next_store])
             route_list.append(stores[i])
             route_list.append(stores[next_store])
             nodes_list.append(i)
             nodes_list.append(next_store)
-            demand += weekdayDemands[i] + weekdayDemands[next_store]
+            demand += satDemands[i] + satDemands[next_store]
             duration_store = travel_durations[next_store]
 
             visited = False
@@ -107,8 +102,8 @@ for i in range(len(stores)):
 
             nodes_list.append(next_store_after)
             next_visited.append(next_store_after)
-            demand += weekdayDemands[next_store_after]
-            time += duration_store[next_store_after] + (7.5*60*weekdayDemands[next_store_after]) + distribution_time[next_store_after]
+            demand += satDemands[next_store_after]
+            time += duration_store[next_store_after] + (7.5*60*satDemands[next_store_after]) + distribution_time[next_store_after]
 
             if ((time < time_threshold) & (demand <= demand_threshold)):
                 back_home = distribution_time[next_store_after]
@@ -117,7 +112,7 @@ for i in range(len(stores)):
                 duration_store = travel_durations[next_store_after]
                 
             else: 
-                time -= duration_store[next_store_after] + (7.5*60*weekdayDemands[next_store_after]) + distribution_time[next_store_after] - back_home
+                time -= duration_store[next_store_after] + (7.5*60*satDemands[next_store_after]) + distribution_time[next_store_after] - back_home
                 time += back_home
                 back_home = 0
 
@@ -135,8 +130,8 @@ for i in range(len(stores)):
                         smallest = duration_store[k]
                         next_store_after = k
 
-                demand += weekdayDemands[next_store_after]
-                time += duration_store[next_store_after] + (7.5*60*weekdayDemands[next_store_after]) + distribution_time[next_store_after]
+                demand += satDemands[next_store_after]
+                time += duration_store[next_store_after] + (7.5*60*satDemands[next_store_after]) + distribution_time[next_store_after]
                 nodes_list.append(next_store_after)
 
                 if ((time < time_threshold) & (demand <= demand_threshold)):
@@ -145,7 +140,7 @@ for i in range(len(stores)):
                     route_list.append(stores[next_store_after])
                     duration_store = travel_durations[next_store_after]
                 else: 
-                    time -= duration_store[next_store_after] + (7.5*60*weekdayDemands[next_store_after]) + distribution_time[next_store_after]
+                    time -= duration_store[next_store_after] + (7.5*60*satDemands[next_store_after]) + distribution_time[next_store_after]
                     time += back_home
                     back_home = 0
 
@@ -155,4 +150,3 @@ for i in range(len(stores)):
             hours.append(time)
 
 time = 0
-

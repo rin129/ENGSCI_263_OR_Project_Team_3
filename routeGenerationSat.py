@@ -11,6 +11,7 @@
 
 import math
 import numpy as np
+from getUniqueItems import *
 
 stores = np.genfromtxt('WoolworthsTravelDurations.csv', dtype = str, delimiter = ',', skip_footer = 66)
 stores = stores[1:67]
@@ -82,7 +83,8 @@ for i in range(len(stores)):
 
         for j in range(len(duration_store)):
             no_demand = j in zero_demand
-            if ((duration_store[j] != 0) & (no_demand == False)):
+            visited = j in nodes_list
+            if ((duration_store[j] != 0) & (no_demand == False) & (visited == False)):
                 smallest = duration_store[j]
                 next_store = j
                 break
@@ -128,7 +130,8 @@ for i in range(len(stores)):
 
             for j in range(len(duration_store)):
                 no_demand = j in zero_demand
-                if ((duration_store[j] != 0) & (no_demand == False)):
+                visited = j in nodes_list
+                if ((duration_store[j] != 0) & (no_demand == False) & (visited == False)):
                     smallest = duration_store[j]
                     next_store_after = j
                     break
@@ -161,7 +164,8 @@ for i in range(len(stores)):
 
                 for j in range(len(duration_store)):
                     no_demand = j in zero_demand
-                    if ((duration_store[j] != 0) & (no_demand == False)):
+                    visited = j in nodes_list
+                    if ((duration_store[j] != 0) & (no_demand == False) & (visited == False)):
                         smallest = duration_store[j]
                         next_store_after = j
                         break
@@ -187,9 +191,9 @@ for i in range(len(stores)):
                     time += back_home
                     back_home = 0
 
+            route_list = getUniqueItems(route_list)
+
             time = time/(60*60)
             time = (math.ceil(time*4))/4
             routes.append(route_list)
             hours.append(time)
-
-time = 0

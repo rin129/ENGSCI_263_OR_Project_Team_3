@@ -8,6 +8,7 @@
 
 import math
 import numpy as np
+from getUniqueItems import *
 
 # store variable is just an array with each index being the name of each store
 # 55th index deleted as this is the distribution centre and is not required
@@ -94,7 +95,8 @@ for i in range(len(stores)):
         # smallest is the shortest travel duration which is not zero
 
         for j in range(len(duration_store)):
-            if (duration_store[j] != 0):
+            visited = j in nodes_list
+            if ((duration_store[j] != 0) & (visited == False)):
                 smallest = duration_store[j]
                 next_store = j
                 break
@@ -168,7 +170,8 @@ for i in range(len(stores)):
             # smallest is the shortest travel duration which is not zero
 
             for j in range(len(duration_store)):
-                if (duration_store[j] != 0):
+                visited = j in nodes_list
+                if ((duration_store[j] != 0) & (visited == False)):
                     smallest = duration_store[j]
                     next_store_after = j
                     break
@@ -219,7 +222,7 @@ for i in range(len(stores)):
 
                 for j in range(len(duration_store)):
                     visited = j in nodes_list
-                    if ((duration_store[j] != 0) & (visited)):
+                    if ((duration_store[j] != 0) & (visited == False)):
                         smallest = duration_store[j]
                         next_store_after = j
                         break
@@ -255,6 +258,8 @@ for i in range(len(stores)):
             # multiply the time by 4, round it up to the nearest integer, then divide by 4 to get the answer as a quarter value
             # add the route to the list of routes
             # add the time to the list of hours
+
+            route_list = getUniqueItems(route_list)
 
             time = time/(60*60)
             time = (math.ceil(time*4))/4

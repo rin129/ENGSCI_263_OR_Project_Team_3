@@ -74,3 +74,18 @@ print("Status:", LpStatus[prob.status])
 for route in prob.variables():
     if route.varValue == 1:
         print(route.name)
+
+print(routes[0])
+print(routes[112])
+print(routes[1147])
+print(routes[1411])
+print(routes[1582])
+print(routes[1771])
+print(routes[223])
+print(routes[306])
+print(routes[410])
+print(routes[5263])
+print(routes[570])
+print(routes[613])
+print(routes[762])
+print(routes[846])

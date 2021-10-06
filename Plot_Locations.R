@@ -3,17 +3,16 @@ library(leaflet)
 
 #Read in Locations csv as a data frame
 locations = read.csv("WoolworthsLocations.csv")
+#Mutating type of supermarket to work for the icons. 
+locations$Type[locations$Type == "Countdown Metro"] <- "Countdown_Metro"
+locations$Type[locations$Type == "Distribution Centre"] <- "Distribution_Centre"
 
-#Creating function so we can colour the locations based on what type it is
-colorFact = colorFactor(c("red", "green", "blue", "black", "yellow"), domain = c("Countdown", "Countdown Metro", "Distribution Centre", "FreshChoice", "SuperValue"), ordered = TRUE)
+IconsList <- iconList(Countdown = makeIcon("https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png", iconWidth = 24, iconHeight =32),
+                       Countdown_Metro = makeIcon("https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png", iconWidth = 24, iconHeight =32),
+                       Distribution_Centre = makeIcon("https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png", iconWidth = 24, iconHeight =32),
+                       FreshChoice = makeIcon("https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png", iconWidth = 24, iconHeight =32),
+                       SuperValue = makeIcon("https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png", iconWidth = 24, iconHeight =32))
 
 #Create an instance of the leaflet object locations, the markers are coloured based on what type of location they are. 
-#Included a legend to the plot
-#Included adaptive clustering to this plot
-leaflet(data = locations) %>% addTiles() %>% addCircleMarkers(stroke = FALSE, radius = 8, color = ~colorFact(Type), fillOpacity = 0.8, clusterOptions = markerClusterOptions()) %>% 
-  addLegend("bottomright", pal = colorFact, values = ~Type, title = "Types of Locations")
 
-#Same as above, but no adaptive clustering
-#leaflet(data = locations) %>% addTiles() %>% addCircleMarkers(stroke = FALSE, radius = 8, color = ~colorFact(Type), fillOpacity = 0.8) %>% 
-  #addLegend("bottomright", pal = colorFact, values = ~Type, title = "Types of Locations")
-
+leaflet(data = locations) %>% addTiles() %>% addMarkers(lng = ~ Long, lat = ~ Lat, icon = ~ IconsList[Type])

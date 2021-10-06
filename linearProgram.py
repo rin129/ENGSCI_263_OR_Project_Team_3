@@ -71,6 +71,7 @@ for route in prob.variables():
     if route.varValue == 1:
         print(route)
 
+# Print all the optimal routes. 
 print(routes[1019])
 print(routes[128])
 print(routes[1548])

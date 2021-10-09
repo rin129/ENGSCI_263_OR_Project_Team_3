@@ -53,6 +53,10 @@ demand = 0
 
 for i in range(len(stores)):
 
+    travel_durations = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 1, usecols = list(range(1,67)))
+    travel_durations = np.delete(travel_durations, 55, 0)
+    travel_durations = np.delete(travel_durations, 55, 1)
+
     # smallest_visited array is an array that will contain the nearest 10 stores from the starting store already visited 
 
     smallest_visited = []
@@ -209,7 +213,7 @@ for i in range(len(stores)):
                 duration_store = travel_durations[next_store_after]
                 
             else: 
-                time -= duration_store[next_store_after] + (7.5*60*weekdayDemands[next_store_after]) + distribution_time[next_store_after] - back_home
+                time -= duration_store[next_store_after] + (7.5*60*weekdayDemands[next_store_after]) + distribution_time[next_store_after]
                 time += back_home
                 back_home = 0
 

@@ -70,24 +70,15 @@ prob.solve()
 # The status of the problem is printed to the screen. 
 print("Status:", LpStatus[prob.status])
 
+
+optimal_routes_weekend = []
+optimal_weekend_hours = []
+
 # The name of the routes selected are printed to the screen. 
 for route in prob.variables():
     if route.varValue == 1:
-        print(route.name)
+        index = (route.name).replace("Route_","")
+        optimal_routes_weekend.append(routes[int(index)])
+        optimal_weekend_hours.append(hours[int(index)])
 
-# Print all the optimal routes. 
-print(routes[1344])
-print(routes[1493])
-print(routes[1683])
-print(routes[1873])
-print(routes[192])
-print(routes[253])
-print(routes[2962])
-print(routes[326])
-print(routes[3439])
-print(routes[3914])
-print(routes[414])
-print(routes[601])
-print(routes[62])
-print(routes[821])
-print(routes[935])
+hello = 0

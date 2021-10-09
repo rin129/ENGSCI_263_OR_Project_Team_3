@@ -48,6 +48,10 @@ demand = 0
 
 for i in range(len(stores)):
 
+    travel_durations = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 1, usecols = list(range(1,67)))
+    travel_durations = np.delete(travel_durations, 55, 0)
+    travel_durations = np.delete(travel_durations, 55, 1)
+
     smallest_visited = []
     smallest_visited.append(i)
     

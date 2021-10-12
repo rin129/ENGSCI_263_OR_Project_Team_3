@@ -154,3 +154,9 @@ print((np.sum(simulation_extra_trucks)/num_sims)*100)
 
 # average number of trucks/routes needing overtime pay per schedule
 print(np.sum(simulation_overtime)/num_sims)
+
+plt.hist(simulation_costs, density=False, alpha=1, bins=20, edgecolor = 'black')
+plt.title("1,000 simulations of weekday route schedule") 
+plt.xlabel("Cost (NZD)")
+plt.ylabel("Frequency")
+plt.show()

@@ -19,7 +19,9 @@ stores = np.delete(stores, 55, 0)
 
 # satDemands is an array for the average saturday demands
 
-satDemands = np.genfromtxt('SaturdayDemand.csv', delimiter = ',', skip_header = 1, usecols = 2)
+### change the line below with the store you want to remove to compare results
+
+satDemands = np.genfromtxt('Removing_stores/Papakura-Roselands/SaturdayDemands_Roselands_Jumbo.csv', delimiter = ',', skip_header = 1, usecols = 2)
 
 travel_durations = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 1, usecols = list(range(1,67)))
 distribution_time = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 56, skip_footer = 10, usecols = list(range(1,67)))

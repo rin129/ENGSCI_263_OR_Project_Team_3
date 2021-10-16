@@ -16,7 +16,7 @@ from pulp import *
 # "routes" is a list of a list, that contains all the possible routes generated, and the stores visited in those routes.
 # "hours" is a list, that contains the travel time of each corresponding route generated from "routes".
 # "stores" contains all the stores that need to be visited. 
-from routeGeneration import routes, hours, stores
+from routeGeneration import routes, hours, storesForLP
 
 # Number of trucks in the fleet, and number of shifts for operation. 
 trucks = 30
@@ -54,7 +54,7 @@ prob += lpSum([route_cost[route] * x[route] for route in possible_routes])
 prob += lpSum([x[route] for route in possible_routes]) <= max_routes
 
 # Store constraint - each store can only be visited once. 
-for store in stores:
+for store in storesForLP:
     prob += lpSum([x[route] for route in possible_routes if store in routes[route]]) == 1
 
 # The problem data is written to an .lp file. 

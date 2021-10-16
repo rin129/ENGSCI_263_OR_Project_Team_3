@@ -19,7 +19,9 @@ stores = np.delete(stores, 55, 0)
 
 # weekdayDeamnds variable is an array to store the average weekday demands of each store
 
-weekdayDemands = np.genfromtxt('WeekdayDemands.csv', delimiter = ',', skip_header = 1, usecols = 2)
+### change the line below with the store you want to remove to compare results
+
+weekdayDemands = np.genfromtxt('Removing_stores/Papakura-Roselands/WeekdayDemands_Roselands_Jumbo.csv', delimiter = ',', skip_header = 1, usecols = 2)
 
 # travel_durations array is the 2d array for the time taken to travel between stores 
 # distribution_time array is an array for the time taken to travel from the distribution centre to all the stores
@@ -36,6 +38,18 @@ travel_durations = np.delete(travel_durations, 55, 1)
 
 time_threshold = 240*60
 demand_threshold = 26
+
+# zero demand empty list stores the index positions of the stores with no demand on saturday
+
+zero_demand = []
+storesForLP = stores
+
+# loop through all stores to find which ones have zero demand, store them in the zero_demand array
+
+for a in range(len(weekdayDemands)):
+    if (weekdayDemands[a] == 0):
+        zero_demand.append(a)
+        storesForLP = np.delete(storesForLP, a, 0)
 
 # initialise the routes and hours array
 # routes stores a list of all the routes
@@ -66,6 +80,11 @@ for i in range(len(stores)):
 
     for ii in range(10):
 
+        no_demand = i in zero_demand
+
+        if (no_demand == True):
+            break
+
         # nodes_list variable contains the stores that the specific route has already visited to avoid repeats
         # next_visited is an array that contains the nearest 10 stores from one of the original 10 nearest store
         # next_store is the index position of one of the 10 nearest store
@@ -84,6 +103,8 @@ for i in range(len(stores)):
         # duration store is a 1D array that contains the travel durations from the starting store to every other store 
         # append nodes_list (list that contains all the nodes) with the starting store
 
+        no_demand = False
+
         duration_store = travel_durations[i]
         nodes_list.append(i)
 
@@ -99,8 +120,9 @@ for i in range(len(stores)):
         # smallest is the shortest travel duration which is not zero
 
         for j in range(len(duration_store)):
+            no_demand = j in zero_demand
             visited = j in nodes_list
-            if ((duration_store[j] != 0) & (visited == False)):
+            if ((duration_store[j] != 0) & (no_demand == False) & (visited == False)):
                 smallest = duration_store[j]
                 next_store = j
                 break
@@ -111,7 +133,8 @@ for i in range(len(stores)):
         for k in range(len(duration_store)):
             thisSmallest = k in smallest_visited
             visited = k in nodes_list
-            if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (thisSmallest == False) & (visited == False)):
+            no_demand = k in zero_demand
+            if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (thisSmallest == False) & (visited == False) & (no_demand == False)):
                 smallest = duration_store[k]
                 next_store = k
 
@@ -165,6 +188,7 @@ for i in range(len(stores)):
             # if the store is already part of the nearest 10 and has routes generated, set its travel duration to that store to be 0
             
             for l in range(len(duration_store)):
+                no_demand = j in zero_demand
                 nextSmallest = l in next_visited
                 visited = l in nodes_list
                 if ((nextSmallest == True) | (visited == True)):
@@ -175,7 +199,7 @@ for i in range(len(stores)):
 
             for j in range(len(duration_store)):
                 visited = j in nodes_list
-                if ((duration_store[j] != 0) & (visited == False)):
+                if ((duration_store[j] != 0) & (visited == False) & (no_demand == False)):
                     smallest = duration_store[j]
                     next_store_after = j
                     break
@@ -186,7 +210,8 @@ for i in range(len(stores)):
             for k in range(len(duration_store)):
                 nextSmallest = k in next_visited
                 visited = k in nodes_list
-                if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (nextSmallest == False) & (visited == False)):
+                no_demand = k in zero_demand
+                if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (nextSmallest == False) & (visited == False) & (no_demand == False)):
                     smallest = duration_store[k]
                     next_store_after = k
 
@@ -225,8 +250,9 @@ for i in range(len(stores)):
                 # first for loop sets the smallest variable temporarily based on the fact that it has not been visited by the route already
 
                 for j in range(len(duration_store)):
+                    no_demand = j in zero_demand
                     visited = j in nodes_list
-                    if ((duration_store[j] != 0) & (visited == False)):
+                    if ((duration_store[j] != 0) & (no_demand == False) & (visited == False)):
                         smallest = duration_store[j]
                         next_store_after = j
                         break
@@ -235,7 +261,8 @@ for i in range(len(stores)):
 
                 for k in range(len(duration_store)):
                     visited = k in nodes_list
-                    if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (visited == False)):
+                    no_demand = k in zero_demand
+                    if ((duration_store[k] != 0) & (duration_store[k] < smallest) & (visited == False) & (no_demand == False)):
                         smallest = duration_store[k]
                         next_store_after = k
 

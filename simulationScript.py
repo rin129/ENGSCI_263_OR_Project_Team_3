@@ -4,11 +4,13 @@
 # This file simulates the optimal weekday schedule produced in the linearProgram.py file
 # The average cost, average number of overtime shifts required for the schedule, and percetnage of time extra trucks are required for the schedule
 
-from routeGeneration import *
 from scipy import stats
 import matplotlib.pyplot as plt
 import numpy as np
-from linearProgram import optimal_Routes
+import math
+
+from routeGeneration import *
+from linearProgram import *
 
 # two functions are required to model the varaince in traffic times
 # the first function models the PERT-Beta function
@@ -38,125 +40,149 @@ def generateTaskTime(a, m, b):
     
     return taskTime
 
-# indicate the number of simulations for the schedule
+def simulationScript(demand_file, optimal_Routes):
 
-num_sims = 1000
+    demand_threshold = 26
 
-# weekDemands is an array of the demands per store based on the 20 weekdays demand data was collected from
+    # the distribution_time array contains the duration time from the distribution centre to all stores
 
-weekDemands = np.genfromtxt("WoolworthsDemandsWeekdays.csv", dtype = int, delimiter = ',')
+    distribution_time = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 56, skip_footer = 10, usecols = list(range(1,67)))
+    distribution_time = np.delete(distribution_time, 55, 0)
 
-# travel_durations is a 2d array of the travel times between stores
+    # list of all the stores
 
-travel_durations = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 1, usecols = list(range(1,67)))    
-travel_durations = np.delete(travel_durations, 55, 0)
-travel_durations = np.delete(travel_durations, 55, 1)
+    stores = np.genfromtxt('WoolworthsTravelDurations.csv', dtype = str, delimiter = ',', skip_footer = 66)
+    stores = stores[1:67]
+    stores = np.delete(stores, 55, 0)
 
-# simulation_costs, simulation_overtime, simulation_extra_trucks store the total cost of the schedule, number of overtime shifts, number of extra trucks required for every simulation
+    stores = stores.tolist()
 
-simulation_costs = [0] * num_sims
-simulation_overtime = [0] * num_sims
-simulation_extra_trucks = [0] * num_sims
+    # indicate the number of simulations for the schedule
 
-# loop through the number of simulations required
+    num_sims = 1000
 
-for sims in range(num_sims):
+    # weekDemands is an array of the demands per store based on the 20 weekdays demand data was collected from
 
-    # initalise the cost of the simulation, the number of extra trucks, and number of overtime shifts
+    weekDemands = np.genfromtxt(demand_file, dtype = int, delimiter = ',')
 
-    cost = 0
-    extra_trucks = 0
-    overtime = 0
+    # travel_durations is a 2d array of the travel times between stores
 
-    # loop through the routes in the schedule
+    travel_durations = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 1, usecols = list(range(1,67)))    
+    travel_durations = np.delete(travel_durations, 55, 0)
+    travel_durations = np.delete(travel_durations, 55, 1)
 
-    for i in range(len(optimal_Routes)):
+    # simulation_costs, simulation_overtime, simulation_extra_trucks store the total cost of the schedule, number of overtime shifts, number of extra trucks required for every simulation
 
-        # intiliase the route time and demand
+    simulation_costs = [0] * num_sims
+    simulation_overtime = [0] * num_sims
+    simulation_extra_trucks = [0] * num_sims
 
-        sim_time = 0
-        sim_demand = 0
+    # loop through the number of simulations required
 
-        # loop through each store in route
+    for sims in range(num_sims):
 
-        for j in range(len(optimal_Routes[i])):
+        # initalise the cost of the simulation, the number of extra trucks, and number of overtime shifts
+
+        cost = 0
+        extra_trucks = 0
+        overtime = 0
+
+        # loop through the routes in the schedule
+
+        for i in range(len(optimal_Routes)):
+
+            # intiliase the route time and demand
+
+            sim_time = 0
+            sim_demand = 0
+
+            # loop through each store in route
+
+            for j in range(len(optimal_Routes[i])):
+                
+                # find the index position of the current store in the route
+                
+                for k in range(len(stores)):
+                    if (optimal_Routes[i][j] == stores[k]):
+                        store_index = k
+                        break
+                
+                
+                # sample with replacement the demand for pallets from that store
+                # increment the route's demand 
+
+                store_demand = np.random.choice(weekDemands[store_index], size = 1, replace = True)
+                sim_demand += store_demand
+
+                # if the simulation time is still zero, generate an estimate of the time taken to get from the distribution store to the first store in the route using the PERT-Beta distribution function
+                # if the loop has reached the last store in the route, add the time taken to get between stores and from the last store to the distribution centre 
+                # otherwise increment the time by taking an estimate of time between stores based on the PERT-Beta distribution function
+
+                if (sim_time == 0):
+                    travel_time = distribution_time[store_index]
+                    sim_time += generateTaskTime(travel_time * 0.8, travel_time, travel_time * 1.4) + (7.5*60*store_demand)
+                elif (j == len(optimal_Routes[i]) - 1):
+                    travel_time = duration_store[store_index] 
+                    sim_time += generateTaskTime(travel_time * 0.8, travel_time, travel_time * 1.4) + (7.5*60*store_demand)
+                    travel_time = distribution_time[store_index]
+                    sim_time += generateTaskTime(travel_time * 0.8, travel_time, travel_time * 1.4)
+                else:
+                    travel_time = duration_store[store_index] 
+                    sim_time += generateTaskTime(travel_time * 0.8, travel_time, travel_time * 1.4) + (7.5*60*store_demand)
+
+                duration_store = travel_durations[store_index]
+
+            # convert the route's time to hours and round up to the nearest quarter hour
+
+            sim_time = sim_time/(60*60)
+            sim_time = (math.ceil(sim_time*4))/4
+
+            # if the demand for the route is greater than the threshold of 26, this means an extra truck is required
+            # since the scheudle only uses 29 of a possible 60 trucks the cost for another truck can be assumed to be just the normal rate, $225 per hour
+            # it is assumed that the extra truck on schedule will require 4 hours for their trip
+
+            if (sim_demand > demand_threshold):
+                extra_trucks += 1
+                cost += (225 * 4)
             
-            # find the index position of the current store in the route
+            # if the total time taken to complete the route is greater than 4 hours, increment the overtime counter
+            # increase the cost by accounting for the fact that overtime is 275 per hour, otherwise increase count based on the rate of $225 per hour
 
-            for k in range(len(stores)):
-                if (optimal_Routes[i][j] == stores[k]):
-                    store_index = k
-                    break
-            
-            # sample with replacement the demand for pallets from that store
-            # increment the route's demand 
+            if (sim_time > 4):
+                overtime += 1
+                cost += 275 * (sim_time - 4) + 225 * 4
 
-            store_demand = np.random.choice(weekDemands[store_index], size = 1, replace = True)
-            sim_demand += store_demand
-
-            # if the simulation time is still zero, generate an estimate of the time taken to get from the distribution store to the first store in the route using the PERT-Beta distribution function
-            # if the loop has reached the last store in the route, add the time taken to get between stores and from the last store to the distribution centre 
-            # otherwise increment the time by taking an estimate of time between stores based on the PERT-Beta distribution function
-
-            if (sim_time == 0):
-                travel_time = distribution_time[store_index]
-                sim_time += generateTaskTime(travel_time * 0.8, travel_time, travel_time * 1.4) + (7.5*60*store_demand)
-            elif (j == len(optimal_Routes[i]) - 1):
-                travel_time = duration_store[store_index] 
-                sim_time += generateTaskTime(travel_time * 0.8, travel_time, travel_time * 1.4) + (7.5*60*store_demand)
-                travel_time = distribution_time[store_index]
-                sim_time += generateTaskTime(travel_time * 0.8, travel_time, travel_time * 1.4)
             else:
-                travel_time = duration_store[store_index] 
-                sim_time += generateTaskTime(travel_time * 0.8, travel_time, travel_time * 1.4) + (7.5*60*store_demand)
+                cost += 225 * sim_time
 
-            duration_store = travel_durations[store_index]
+        # append the arrays for simulation results
 
-        # convert the route's time to hours and round up to the nearest quarter hour
+        simulation_costs[sims] = cost
+        simulation_extra_trucks[sims] = extra_trucks
+        simulation_overtime[sims] = overtime
+    
+    return simulation_costs, simulation_extra_trucks, simulation_overtime
 
-        sim_time = sim_time/(60*60)
-        sim_time = (math.ceil(sim_time*4))/4
+'''
 
-        # if the demand for the route is greater than the threshold of 26, this means an extra truck is required
-        # since the scheudle only uses 29 of a possible 60 trucks the cost for another truck can be assumed to be just the normal rate, $225 per hour
-        # it is assumed that the extra truck on schedule will require 4 hours for their trip
+    # Average cost based off simulation
+    print(np.mean(simulation_costs))
 
-        if (sim_demand > demand_threshold):
-            extra_trucks += 1
-            cost += (225 * 4)
-        
-        # if the total time taken to complete the route is greater than 4 hours, increment the overtime counter
-        # increase the cost by accounting for the fact that overtime is 275 per hour, otherwise increase count based on the rate of $225 per hour
+    # 95% percentile interval of costs
+    simulation_costs.sort()
+    print(simulation_costs[25])
+    print(simulation_costs[975])
 
-        if (sim_time > 4):
-            overtime += 1
-            cost += 275 * (sim_time - 4) + 225 * 4
+    # percentgae of time extra trucks/routes are needed
+    print((np.sum(simulation_extra_trucks)/num_sims)*100)
 
-        else:
-            cost += 225 * sim_time
+    # average number of trucks/routes needing overtime pay per schedule
+    print(np.sum(simulation_overtime)/num_sims)
 
-    # append the arrays for simulation results
+    plt.hist(simulation_costs, density=False, alpha=1, bins=20, edgecolor = 'black')
+    plt.title("1,000 simulations of weekday route schedule") 
+    plt.xlabel("Cost (NZD)")
+    plt.ylabel("Frequency")
+    plt.show()
 
-    simulation_costs[sims] = cost
-    simulation_extra_trucks[sims] = extra_trucks
-    simulation_overtime[sims] = overtime
-
-# Average cost based off simulation
-print(np.mean(simulation_costs))
-
-# 95% percentile interval of costs
-simulation_costs.sort()
-print(simulation_costs[25])
-print(simulation_costs[975])
-
-# percentgae of time extra trucks/routes are needed
-print((np.sum(simulation_extra_trucks)/num_sims)*100)
-
-# average number of trucks/routes needing overtime pay per schedule
-print(np.sum(simulation_overtime)/num_sims)
-
-plt.hist(simulation_costs, density=False, alpha=1, bins=20, edgecolor = 'black')
-plt.title("1,000 simulations of weekday route schedule") 
-plt.xlabel("Cost (NZD)")
-plt.ylabel("Frequency")
-plt.show()
+'''

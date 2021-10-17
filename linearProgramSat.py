@@ -86,3 +86,6 @@ for optimal_route in optimal_routes_weekend:
     for i in range(len(optimal_route)):
         print("",optimal_route[i],"->", end = "")
     print(" Distribution Centre")
+
+for i in range(len(optimal_weekend_hours)):
+    print(optimal_weekend_hours[i])

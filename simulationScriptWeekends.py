@@ -148,7 +148,7 @@ print((np.sum(simulation_extra_trucks)/num_sims)*100)
 print(np.sum(simulation_overtime)/num_sims)
 
 plt.hist(simulation_costs, density=False, alpha=1, bins=20, edgecolor = 'black')
-plt.title("1,000 simulations of weekend route schedule") 
+plt.title("1,000 simulations of Saturday route schedule") 
 plt.xlabel("Cost (NZD)")
 plt.ylabel("Frequency")
 plt.show()

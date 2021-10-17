@@ -21,7 +21,7 @@ stores = np.delete(stores, 55, 0)
 
 ### change the line below with the store you want to remove to compare results
 
-weekdayDemands = np.genfromtxt('Removing_stores/Papakura-Roselands/WeekdayDemands_Roselands_Jumbo.csv', delimiter = ',', skip_header = 1, usecols = 2)
+weekdayDemands = np.genfromtxt('WeekdayDemands.csv', delimiter = ',', skip_header = 1, usecols = 2)
 
 # travel_durations array is the 2d array for the time taken to travel between stores 
 # distribution_time array is an array for the time taken to travel from the distribution centre to all the stores

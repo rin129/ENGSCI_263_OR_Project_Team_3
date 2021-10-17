@@ -81,4 +81,8 @@ for route in prob.variables():
         optimal_routes_weekend.append(routes[int(index)])
         optimal_weekend_hours.append(hours[int(index)])
 
-hello = 0
+for optimal_route in optimal_routes_weekend:
+    print("Distribution Centre ->", end = "")
+    for i in range(len(optimal_route)):
+        print("",optimal_route[i],"->", end = "")
+    print(" Distribution Centre")

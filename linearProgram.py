@@ -76,4 +76,8 @@ for route in prob.variables():
         optimal_Routes.append(routes[int(index)])
         optimal_Routes_times.append(hours[int(index)])
 
-hello = 0   
+for optimal_route in optimal_Routes:
+    print("Distribution Centre ->", end = "")
+    for i in range(len(optimal_route)):
+        print("",optimal_route[i],"->", end = "")
+    print(" Distribution Centre")

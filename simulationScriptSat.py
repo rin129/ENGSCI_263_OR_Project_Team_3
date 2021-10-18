@@ -1,7 +1,7 @@
 # ENGSCI 263 
 # OR Project, Team 03
 
-# This file simulates the optimal weekday schedule produced in the linearProgram function
+# This file simulates the optimal weekend schedule produced in the linearProgramSat.py file
 # The average cost, average number of overtime shifts required for the schedule, and percetnage of time extra trucks are required for the schedule
 
 from scipy import stats
@@ -9,13 +9,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-from routeGeneration import *
-from linearProgram import *
-
 # two functions are required to model the varaince in traffic times
 # the first function models the right-skew distribution
 # the second function generates the times based on the distribution
-# the first input a is the lower bound of the distribution, m is the average value of the ditribution, b is the upper bound of the distribution
+# the first input a is the lower bound of the distribution, m is the expected value of the ditribution, b is the upper bound of the distribution
 
 def alphaBetaFromAmB(a, m, b):
     first_numer_alpha = 2.0 * (b + 4 * m - 5 * a)
@@ -38,7 +35,7 @@ def generateTaskTime(a, m, b):
     
     return taskTime
 
-def simulationScript(optimal_Routes):
+def simulationScriptSat(optimal_Routes):
 
     '''
     This function simulates the performance of the optimal routing schedule generating an array of costs, number of extra trucks, and number of overtime shfits
@@ -61,14 +58,11 @@ def simulationScript(optimal_Routes):
     
     '''
 
-    # set the demand_threshold
-
+    # setting demand threshold
     demand_threshold = 26
 
-    # the distribution_time array contains the duration time from the distribution centre to all stores
-
-    distribution_time = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 56, skip_footer = 10, usecols = list(range(1,67)))
-    distribution_time = np.delete(distribution_time, 55, 0)
+    # number of simulations required
+    num_sims = 1000
 
     # list of all the stores
 
@@ -78,66 +72,56 @@ def simulationScript(optimal_Routes):
 
     stores = stores.tolist()
 
-    # indicate the number of simulations for the schedule
+    distribution_time = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 56, skip_footer = 10, usecols = list(range(1,67)))
+    distribution_time = np.delete(distribution_time, 55, 0)
 
-    num_sims = 1000
+    # weekend demands over the 4 week period, given that we are taking 4 weeks worth we only have 4 days worth of demands
+    weekendDemands = np.genfromtxt("WoolworthsDemandsWeekend.csv", dtype = int, delimiter = ',', skip_header = 1, usecols = list(range(1,5)))
 
-    # weekDemands is an array of the demands per store based on the 20 weekdays demand data was collected from
-
-    weekDemands = np.genfromtxt('WoolworthsDemandsWeekdays.csv', dtype = int, delimiter = ',')
-
-    # travel_durations is a 2d array of the travel times between stores
-
+    # 2d array for travel_durations
     travel_durations = np.genfromtxt('WoolworthsTravelDurations.csv', delimiter = ',', skip_header = 1, usecols = list(range(1,67)))    
     travel_durations = np.delete(travel_durations, 55, 0)
     travel_durations = np.delete(travel_durations, 55, 1)
 
-    # simulation_costs, simulation_overtime, simulation_extra_trucks store the total cost of the schedule, number of overtime shifts, number of extra trucks required for every simulation
-
+    # arrays for simulation costs
     simulation_costs = [0] * num_sims
     simulation_overtime = [0] * num_sims
     simulation_extra_trucks = [0] * num_sims
 
-    # loop through the number of simulations required
-
+    # loop through the number of simulations
     for sims in range(num_sims):
 
-        # initalise the cost of the simulation, the number of extra trucks, and number of overtime shifts
+        # initlaise the cost, number of extra trucks, number of overtime shifts for the schedule
 
         cost = 0
         extra_trucks = 0
         overtime = 0
 
-        # loop through the routes in the schedule
-
+        # loop through the routes in the weekend schedule
         for i in range(len(optimal_Routes)):
 
-            # intiliase the route time and demand
-
+            # initliase the time and demand for the route     
             sim_time = 0
             sim_demand = 0
 
-            # loop through each store in route
-
+            # loop through each store in the route
             for j in range(len(optimal_Routes[i])):
                 
-                # find the index position of the current store in the route
-                
+                # find the index position of the store currently in outer loop
                 for k in range(len(stores)):
                     if (optimal_Routes[i][j] == stores[k]):
                         store_index = k
                         break
                 
-                
-                # sample with replacement the demand for pallets from that store
-                # increment the route's demand 
+                # generate a random demand for pallets from the current store, this random allocation requires randomising with replacement
+                # this is important because there are only 4 demand values from the data provided
 
-                store_demand = np.random.choice(weekDemands[store_index], size = 1, replace = True)
+                store_demand = np.random.choice(weekendDemands[store_index], size = 1, replace = True)
                 sim_demand += store_demand
 
-                # if the simulation time is still zero, generate an estimate of the time taken to get from the distribution store to the first store in the route using the right-skew distribution
+                # if the simulation time is still zero, generate an estimate of the time taken to get from the distribution store to the first store in the route using the right-skew distribution function
                 # if the loop has reached the last store in the route, add the time taken to get between stores and from the last store to the distribution centre 
-                # otherwise increment the time by taking an estimate of time between stores based on the right-skew distribution
+                # otherwise increment the time by taking an estimate of time between stores based on the right-skew distribution 
 
                 if (sim_time == 0):
                     travel_time = distribution_time[store_index]
@@ -181,5 +165,29 @@ def simulationScript(optimal_Routes):
         simulation_costs[sims] = cost
         simulation_extra_trucks[sims] = extra_trucks
         simulation_overtime[sims] = overtime
-    
+
     return simulation_costs, simulation_extra_trucks, simulation_overtime
+
+    '''
+
+    # Average cost based off simulation
+    print(np.mean(simulation_costs))
+
+    # 95% percentile interval of costs
+    simulation_costs.sort()
+    print(simulation_costs[25])
+    print(simulation_costs[975])
+
+    # percentgae of time extra trucks/routes are needed
+    print((np.sum(simulation_extra_trucks)/num_sims)*100)
+
+    # average number of trucks/routes needing overtime pay per schedule
+    print(np.sum(simulation_overtime)/num_sims)
+
+    plt.hist(simulation_costs, density=False, alpha=1, bins=20, edgecolor = 'black')
+    plt.title("1,000 simulations of Saturday route schedule") 
+    plt.xlabel("Cost (NZD)")
+    plt.ylabel("Frequency")
+    plt.show()
+
+    '''

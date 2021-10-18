@@ -19,6 +19,12 @@ from pulp import *
 
 def linearProgram(routes, hours, storesForLP):
 
+    '''
+    
+    This function generates an optimal route schedule based on a set of feasible routes
+    
+    '''
+
     # Number of trucks in the fleet, and number of shifts for operation. 
     trucks = 30
     shifts = 2
